@@ -1,0 +1,128 @@
+from Graph import *
+import random
+import sys
+import time
+
+sys.setrecursionlimit(1000000)
+
+
+def graf():
+    global NrMuchii, NrMuchiiMax
+    i = 1
+
+    while i <= nrVirf:
+        j = 1
+        while j <= nrVirf:
+            if j is not i:
+                r = random.randrange(0, 100, nrVirf)
+                if r < per:
+                    r = random.randrange(1, 1000, nrVirf)
+                    dictionary[(i, j)] = r
+            j += 1
+        i += 1
+
+def dijkstra(graph, src):
+    queue = [src]
+    minDistances = {nrVirf: float("inf") for nrVirf in graph}
+    minDistances[src] = 0
+    predecessor = {}
+
+    while queue:
+        currentNode = queue.pop(0)
+        for neighbor in graph[currentNode]:
+            newDist = minDistances[currentNode] + graph[currentNode][neighbor]
+
+            if newDist < minDistances[neighbor]:
+                minDistances[neighbor] = min(newDist, minDistances[neighbor])
+                queue.append(neighbor)
+                predecessor[neighbor] = currentNode
+
+    return minDistances, predecessor
+
+def UCS(graph, src, dest):
+    minDistances, predecessor = dijkstra(graph, src)
+
+    path = []
+    currentNode = dest
+    while currentNode != src:
+        if currentNode not in predecessor:
+            print("Drumul nu exista")
+            break
+        else:
+            path.insert(0, currentNode)
+            currentNode = predecessor[currentNode]
+    path.insert(0, src)
+
+    if dest in minDistances and minDistances[dest] != float("inf"):
+        print('Drumul minim pentru Algoritmul Dijkstra este: ' + str(path))
+
+def printPath(path, v, u, route):
+    if path[v][u] == v:
+        return
+    printPath(path, v, path[v][u], route)
+    route.append(path[v][u])
+
+
+def printSolution(path, n):
+    for v in range(nrVirf):
+        for u in range(nrVirf):
+            if u!= v and path[v][u] != -1:
+                route = [v]
+                printPath(path, v, u, route)
+                route.append(u)
+                print(f'Drumul minim de la {v} -> {u}: ', route)
+
+def floydWarshall(graph2):
+    if not graph2:
+        return
+    n = len(graph2)
+    cost = graph2.copy()
+    path = [[None for x in range(nrVirf)] for y in range(nrVirf)]
+    for v in range(nrVirf):
+        for u in range(nrVirf):
+            if v == u:
+                path[v][u] = 0
+            elif cost[v][u] != 9999999:
+                path[v][u] = v
+            else:
+                path[v][u] = -1
+    for k in range(nrVirf):
+        for v in range(nrVirf):
+            for u in range(nrVirf):
+                if cost[v][k] != 999999 and cost[k][u] !=999999 and (cost[v][k] + cost[k][u] < cost[v][u]):
+                    cost[v][u] = cost[v][k] + cost[k][u]
+                    path[v][u] = path[k][u]
+
+nrVirf = int(input('Numarul de virfuri: '))
+
+NrMuchiiMax = nrVirf * (nrVirf - 1)
+
+print('\nCazuri: ')
+print('1. Graf rar')
+print('2. Graf mediu')
+print('3. Graf dens')
+case = int(input('Alegeti optiune: '))
+if case == 1:
+    phi = 0.37
+elif case == 2:
+    phi = 0.55
+else:
+    phi = 0.84
+
+per = phi * 100
+NrMuchii = 0
+dictionary = {}
+graf()
+print('Graf: ')
+print(dictionary, '\n')
+print('\nAlgoritmul Dijkstra: ')
+start = time.time()
+shortest_path_cost, predecessor = dijkstra(graph, '1')
+print(UCS(graph, '1', '10'))
+end = time.time()
+print('\tTimpul pentru algoritmul Dijkstra este:\t ', end - start)
+print('\n\nAlgoritmul Floyd-Warshall: ')
+start = time.time()
+floydWarshall(graph2)
+end = time.time()
+print('\tTimpul pentru algoritmul Floyd-Warshall este:\t ', end - start)
