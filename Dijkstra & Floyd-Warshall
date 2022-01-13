@@ -1,101 +1,131 @@
-from Graph import *
 import random
-import sys
 import time
-
-sys.setrecursionlimit(1000000)
 
 
 def graf():
-    global NrMuchii, NrMuchiiMax
+    global nrMuchii, nrMuchiiMax
     i = 1
-
     while i <= nrVirf:
         j = 1
         while j <= nrVirf:
-            if j is not i:
-                r = random.randrange(0, 100, nrVirf)
+            if i != j:
+                r = random.randint(0, 100)
                 if r < per:
-                    r = random.randrange(1, 1000, nrVirf)
+                    r = random.randint(1, 1000)
                     dictionary[(i, j)] = r
+                    nrMuchii += 1
             j += 1
         i += 1
-
-def dijkstra(graph, src):
-    queue = [src]
-    minDistances = {nrVirf: float("inf") for nrVirf in graph}
-    minDistances[src] = 0
-    predecessor = {}
-
-    while queue:
-        currentNode = queue.pop(0)
-        for neighbor in graph[currentNode]:
-            newDist = minDistances[currentNode] + graph[currentNode][neighbor]
-
-            if newDist < minDistances[neighbor]:
-                minDistances[neighbor] = min(newDist, minDistances[neighbor])
-                queue.append(neighbor)
-                predecessor[neighbor] = currentNode
-
-    return minDistances, predecessor
-
-def UCS(graph, src, dest):
-    minDistances, predecessor = dijkstra(graph, src)
-
-    path = []
-    currentNode = dest
-    while currentNode != src:
-        if currentNode not in predecessor:
-            print("Drumul nu exista")
-            break
-        else:
-            path.insert(0, currentNode)
-            currentNode = predecessor[currentNode]
-    path.insert(0, src)
-
-    if dest in minDistances and minDistances[dest] != float("inf"):
-        print('Drumul minim pentru Algoritmul Dijkstra este: ' + str(path))
-
-def printPath(path, v, u, route):
-    if path[v][u] == v:
-        return
-    printPath(path, v, path[v][u], route)
-    route.append(path[v][u])
+    nrMuchii2 = float(nrMuchiiMax)
+    phi2 = nrMuchii / nrMuchii2
+    if (case == 1 and (phi2 < 0.32 or phi2 > 0.41)) or (case == 2 and (phi2 < 0.41 or phi2 > 0.68)) or (
+            case == 3 and phi2 < 0.68):
+        dictionary.clear()
+        nrMuchii = 0
+        graf()
 
 
-def printSolution(path, n):
-    for v in range(nrVirf):
-        for u in range(nrVirf):
-            if u!= v and path[v][u] != -1:
-                route = [v]
-                printPath(path, v, u, route)
-                route.append(u)
-                print(f'Drumul minim de la {v} -> {u}: ', route)
-
-def floydWarshall(graph2):
-    if not graph2:
-        return
-    n = len(graph2)
-    cost = graph2.copy()
-    path = [[None for x in range(nrVirf)] for y in range(nrVirf)]
-    for v in range(nrVirf):
-        for u in range(nrVirf):
-            if v == u:
-                path[v][u] = 0
-            elif cost[v][u] != 9999999:
-                path[v][u] = v
+def dijsktra(sursa):
+    global count
+    count = 0
+    marcat = {}
+    dist = {}
+    i = 1
+    while i <= nrVirf:
+        marcat[i] = 0
+        i += 1
+    i = 1
+    while i <= nrVirf:
+        dist[i] = 1000000
+        i += 1
+    dist[sursa] = 0
+    i = 0
+    while i < nrVirf:
+        mi = 1000000
+        j = 1
+        while j <= nrVirf:
+            if dist[j] <= mi:
+                if marcat[j] == 0:
+                    mi = dist[j]
+                    k = j
+            j += 1
+        for x in dictionary:
+            count += 1
+            if x[0] == k:
+                if marcat[x[1]] == 0:
+                    if dist[x[0]] + dictionary[(x[0], x[1])] < dist[x[1]]:
+                        dist[x[1]] = dist[x[0]] + dictionary[(x[0], x[1])]
+        marcat[k] = 1
+        i += 1
+    print("Rezultat dijsktra:")
+    for i in range(1, nrVirf + 1):
+        if i != sursa:
+            if dist[i] == 1000000:
+                print(sursa, '->', i, 'infinit')
             else:
-                path[v][u] = -1
-    for k in range(nrVirf):
-        for v in range(nrVirf):
-            for u in range(nrVirf):
-                if cost[v][k] != 999999 and cost[k][u] !=999999 and (cost[v][k] + cost[k][u] < cost[v][u]):
-                    cost[v][u] = cost[v][k] + cost[k][u]
-                    path[v][u] = path[k][u]
+                pon = dist[i]
+                drum = [i]
+                while pon != 0:
+                    for j in range(1, nrVirf + 1):
+                        if (j, drum[len(drum) - 1]) in dictionary:
+                            if dist[drum[len(drum) - 1]] - dist[j] == dictionary[(j, drum[len(drum) - 1])]:
+                                drum.append(dictionary[(j, drum[len(drum) - 1])])
+                                drum.append(j)
+                                pon -= dictionary[(j, drum[len(drum) - 3])]
+                lun = len(drum) - 1
+                while lun > 0:
+                    print(drum[lun], '--(', drum[lun - 1], ')->', end='', sep='')
+                    lun -= 2
+                print(drum[0])
+                del drum
+
+
+def floyd(sursa):
+    global count2
+    count2 = 0
+    global graf1
+    dictionary2 = {}
+    for i in range(1, nrVirf + 1):
+        for j in range(1, nrVirf + 1):
+            if (i, j) in dictionary:
+                dictionary2[(i, j)] = dictionary[(i, j)]
+            else:
+                dictionary2[(i, j)] = 1000000
+    for i in range(1, nrVirf + 1):
+        for j in range(1, nrVirf + 1):
+            for k in range(1, nrVirf + 1):
+                count2 += 1
+                if j != k:
+                    dictionary2[(j, k)] = min(dictionary2[(j, k)], dictionary2[(j, i)] + dictionary2[(i, k)])
+                else:
+                    dictionary2[(j, k)] = 0
+    print("Rezultat floyd:")
+    for i in range(1, nrVirf + 1):
+        if i != sursa:
+            if dictionary2[(sursa, i)] == 1000000:
+                print(sursa, '->', i, 'infinit')
+            else:
+                pon = dictionary2[(sursa, i)]
+                drum = [i]
+                while pon != 0:
+                    for j in range(1, nrVirf + 1):
+                        if (j, drum[len(drum) - 1]) in dictionary:
+                            if dictionary2[(sursa, drum[len(drum) - 1])] - dictionary2[(sursa, j)] == dictionary[
+                                (j, drum[len(drum) - 1])]:
+                                drum.append(dictionary[(j, drum[len(drum) - 1])])
+                                drum.append(j)
+                                pon -= dictionary[(j, drum[len(drum) - 3])]
+                lun = len(drum) - 1
+                while lun > 0:
+                    print(drum[lun], '--(', drum[lun - 1], ')->', end='', sep='')
+                    lun -= 2
+                print(drum[0])
+                del drum
+
 
 nrVirf = int(input('Numarul de virfuri: '))
 
-NrMuchiiMax = nrVirf * (nrVirf - 1)
+nrMuchiiMax = nrVirf * (nrVirf - 1)
 
 print('\nCazuri: ')
 print('1. Graf rar')
@@ -103,26 +133,184 @@ print('2. Graf mediu')
 print('3. Graf dens')
 case = int(input('Alegeti optiune: '))
 if case == 1:
-    phi = 0.37
+    phi = 0.36
 elif case == 2:
-    phi = 0.55
+    phi = 0.54
 else:
     phi = 0.84
-
 per = phi * 100
-NrMuchii = 0
+nrMuchii = 0
 dictionary = {}
 graf()
-print('Graf: ')
-print(dictionary, '\n')
 print('\nAlgoritmul Dijkstra: ')
 start = time.time()
-shortest_path_cost, predecessor = dijkstra(graph, '1')
-print(UCS(graph, '1', '10'))
+dijsktra(1)
 end = time.time()
 print('\tTimpul pentru algoritmul Dijkstra este:\t ', end - start)
+print('\tNr iteratii: ', count)
 print('\n\nAlgoritmul Floyd-Warshall: ')
 start = time.time()
-floydWarshall(graph2)
+floyd(1)
 end = time.time()
 print('\tTimpul pentru algoritmul Floyd-Warshall este:\t ', end - start)
+print('\tNr iteratii: ', count2)
+
+
+import random
+import time
+
+
+def graf():
+    global nrMuchii, nrMuchiiMax
+    i = 1
+    while i <= nrVirf:
+        j = 1
+        while j <= nrVirf:
+            if i != j:
+                r = random.randint(0, 100)
+                if r < per:
+                    r = random.randint(1, 1000)
+                    dictionary[(i, j)] = r
+                    nrMuchii += 1
+            j += 1
+        i += 1
+    nrMuchii2 = float(nrMuchiiMax)
+    phi2 = nrMuchii / nrMuchii2
+    if (case == 1 and (phi2 < 0.32 or phi2 > 0.41)) or (case == 2 and (phi2 < 0.41 or phi2 > 0.68)) or (
+            case == 3 and phi2 < 0.68):
+        dictionary.clear()
+        nrMuchii = 0
+        graf()
+
+
+def dijsktra(sursa):
+    global count
+    count = 0
+    marcat = {}
+    dist = {}
+    i = 1
+    while i <= nrVirf:
+        marcat[i] = 0
+        i += 1
+    i = 1
+    while i <= nrVirf:
+        dist[i] = 1000000
+        i += 1
+    dist[sursa] = 0
+    i = 0
+    while i < nrVirf:
+        mi = 1000000
+        j = 1
+        while j <= nrVirf:
+            if dist[j] <= mi:
+                if marcat[j] == 0:
+                    mi = dist[j]
+                    k = j
+            j += 1
+        for x in dictionary:
+            count += 1
+            if x[0] == k:
+                if marcat[x[1]] == 0:
+                    if dist[x[0]] + dictionary[(x[0], x[1])] < dist[x[1]]:
+                        dist[x[1]] = dist[x[0]] + dictionary[(x[0], x[1])]
+        marcat[k] = 1
+        i += 1
+    print("Rezultat dijsktra:")
+    for i in range(1, nrVirf + 1):
+        if i != sursa:
+            if dist[i] == 1000000:
+                print(sursa, '->', i, 'infinit')
+            else:
+                pon = dist[i]
+                drum = [i]
+                while pon != 0:
+                    for j in range(1, nrVirf + 1):
+                        if (j, drum[len(drum) - 1]) in dictionary:
+                            if dist[drum[len(drum) - 1]] - dist[j] == dictionary[(j, drum[len(drum) - 1])]:
+                                drum.append(dictionary[(j, drum[len(drum) - 1])])
+                                drum.append(j)
+                                pon -= dictionary[(j, drum[len(drum) - 3])]
+                lun = len(drum) - 1
+                while lun > 0:
+                    print(drum[lun], '--(', drum[lun - 1], ')->', end='', sep='')
+                    lun -= 2
+                print(drum[0])
+                del drum
+
+
+def floyd(sursa):
+    global count2
+    count2 = 0
+    global graf1
+    dictionary2 = {}
+    for i in range(1, nrVirf + 1):
+        for j in range(1, nrVirf + 1):
+            if (i, j) in dictionary:
+                dictionary2[(i, j)] = dictionary[(i, j)]
+            else:
+                dictionary2[(i, j)] = 1000000
+    for i in range(1, nrVirf + 1):
+        for j in range(1, nrVirf + 1):
+            for k in range(1, nrVirf + 1):
+                count2 += 1
+                if j != k:
+                    dictionary2[(j, k)] = min(dictionary2[(j, k)], dictionary2[(j, i)] + dictionary2[(i, k)])
+                else:
+                    dictionary2[(j, k)] = 0
+    print("Rezultat floyd:")
+    for i in range(1, nrVirf + 1):
+        if i != sursa:
+            if dictionary2[(sursa, i)] == 1000000:
+                print(sursa, '->', i, 'infinit')
+            else:
+                pon = dictionary2[(sursa, i)]
+                drum = [i]
+                while pon != 0:
+                    for j in range(1, nrVirf + 1):
+                        if (j, drum[len(drum) - 1]) in dictionary:
+                            if dictionary2[(sursa, drum[len(drum) - 1])] - dictionary2[(sursa, j)] == dictionary[
+                                (j, drum[len(drum) - 1])]:
+                                drum.append(dictionary[(j, drum[len(drum) - 1])])
+                                drum.append(j)
+                                pon -= dictionary[(j, drum[len(drum) - 3])]
+                lun = len(drum) - 1
+                while lun > 0:
+                    print(drum[lun], '--(', drum[lun - 1], ')->', end='', sep='')
+                    lun -= 2
+                print(drum[0])
+                del drum
+
+
+nrVirf = int(input('Numarul de virfuri: '))
+
+nrMuchiiMax = nrVirf * (nrVirf - 1)
+
+print('\nCazuri: ')
+print('1. Graf rar')
+print('2. Graf mediu')
+print('3. Graf dens')
+case = int(input('Alegeti optiune: '))
+if case == 1:
+    phi = 0.36
+elif case == 2:
+    phi = 0.54
+else:
+    phi = 0.84
+per = phi * 100
+nrMuchii = 0
+dictionary = {}
+graf()
+print('\nAlgoritmul Dijkstra: ')
+start = time.time()
+dijsktra(1)
+end = time.time()
+print('\tTimpul pentru algoritmul Dijkstra este:\t ', end - start)
+print('\tNr iteratii: ', count)
+print('\n\nAlgoritmul Floyd-Warshall: ')
+start = time.time()
+floyd(1)
+end = time.time()
+print('\tTimpul pentru algoritmul Floyd-Warshall este:\t ', end - start)
+print('\tNr iteratii: ', count2)
+
+
